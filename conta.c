@@ -1,9 +1,16 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <time.h>
+
+#ifdef _WIN32
+    #include <windows.h>
+    #define sleep(x) Sleep(1000 * (x))
+#else
+    #include <unistd.h>
+#endif
 
 #define MAX_TRANS 100
 
-typedef enum { DEP = 1, SAQ, APLI, RESG, PIX, REND, PIXR, SAIR} TipoTransacao;
+typedef enum { DEP = 1, SAQ, APLI, RESG, PIX, CSAL, EXT, SAIR, REND, PIXR} TipoTransacao;
 
 typedef struct {
     TipoTransacao tipo;
@@ -44,7 +51,7 @@ long long saldo_poupanca(void); // retorna o valor da poupança
 void extrato_imprimir(void); // imprime as transações realizadas e o saldo final.
 
 
-
+void calcular_tempo(char *quando, int tamanho);
 
 
 Conta conta1;
@@ -54,7 +61,7 @@ int main()
     conta_init(); // inicializar conta
     int resposta = 0;
 
-    while (conta1.nlog < 2)
+    while (conta1.nlog < 3) // mudar pra 100 depois
     {
         printf("Escolha uma opção digitando o número correspondente:\n\n");
 
@@ -71,43 +78,60 @@ int main()
 
         switch (resposta)
         {
-            case DEP:  // depositar
-                long long valor;
-                printf("o valor do seu saldo é: %d\n", conta1.saldo_corrente);
-                printf("Digite o valor que deseja depositar: ");
-                scanf("%lld", &valor);
-                depositar(valor);
+            case DEP:
+                long long valor_DEP;
+                printf("O valor do seu saldo atual é: R$%.02f\n", (float) conta1.saldo_corrente / 100);
+                printf("Digite o valor que deseja depositar em centavos: ");
+                scanf("%lld", &valor_DEP);
+                depositar(valor_DEP);
                 break;
 
-            case SAQ:  // sacar
+            case SAQ:
                 long long saque;
-                printf("o valor do seu saldo é: %d\n", conta1.saldo_corrente);
-                printf("Digite o valor que deseja sacar: ");
+                printf("O valor do seu saldo atual é: R$%.02f.\n", (float) conta1.saldo_corrente / 100);
+                printf("Digite o valor que deseja sacar em centavos: ");
                 scanf("%lld", &saque);
                 sacar(saque);
                 break;
 
             case APLI:
-                conta1.nlog++;
+                long long valor_APLI;
+                printf("O valor do seu saldo atual é: R$%.02f\n", (float) conta1.saldo_corrente / 100);
+                printf("Digite o valor que deseja aplicar na poupança em centavos: ");
+                scanf("%lld", &valor_APLI);
+                aplicar_poupanca(valor_APLI);
                 break;
 
             case RESG:
-                conta1.nlog++;
+                long long valor_RESG;
+                printf("O valor do seu saldo da poupança atual é: R$%.02f\n", (float) conta1.saldo_poupanca / 100);
+                printf("Digite o valor que deseja resgatar da poupança em centavos: ");
+                scanf("%lld", &valor_RESG);
+                resgatar_poupanca(valor_RESG);
                 break;
 
             case PIX:
                 conta1.nlog++;
                 break;
 
-            case REND:
+            case CSAL:
+                printf("Saldo corrente: R$%.02f\n", (float) saldo_corrente() / 100);
+                printf("Saldo poupança: R$%.02f\n\n", (float) saldo_poupanca() / 100);
+                sleep(3);
                 break;
 
-            case PIXR:
+            case EXT:
+                extrato_imprimir();
                 break;
 
             case SAIR:
                 printf("Saindo da aplicação.\n");
                 return OK;
+
+            default:
+                printf("Opção inválida.\n\n");
+                break;
+
         }
     }
     printf("Limite de transações alcançado! Encerrando a aplicação por medidas de segurança.\n");
@@ -117,82 +141,171 @@ int main()
 
 void conta_init(void)
 {
-    conta1.saldo_corrente = 100;
+    conta1.saldo_corrente = 0;
     conta1.saldo_poupanca = 0;
     conta1.nlog = 0;
 }
 
 int depositar(long long valor)
 {
-    //inicializar tempo
-    time_t tempo_atual;
-    tempo_atual = time(NULL);
-    struct tm *data_hora;
-    data_hora = localtime(&tempo_atual);
-
-    if (valor < 0)
-    {
-        printf("Valor inválido.\n");
+    if (valor < 0) {
+        printf("Valor inválido! Encerrando a aplicação...\n\n");
+        sleep(3);
         return ERRO_VALOR_INVALIDO;
     }
-        Transacao A;
-        A.tipo = DEP;
-        A.valor = valor;
-        A.saldo_corrente_apos = conta1.saldo_corrente + valor;
-        A.quando[20];
 
-        //snprintf transforma o horário para string e joga pro array
-        snprintf(A.quando, sizeof(A.quando), "%d-%02d-%02d %02d:%02d:%02d", 
-        data_hora->tm_year + 1900, 
-        data_hora->tm_mon + 1, 
-        data_hora->tm_mday, 
-        data_hora->tm_hour, 
-        data_hora->tm_min, 
-        data_hora->tm_sec);
+    Transacao A;
+    A.tipo = DEP;
+    A.valor = valor;
+    A.saldo_corrente_apos = conta1.saldo_corrente + valor;
+    A.saldo_poupanca_apos = conta1.saldo_poupanca; // para evitar lixo de memoria
 
-        conta1.log[conta1.nlog] = A;
-        conta1.saldo_corrente = A.saldo_corrente_apos;
-        conta1.nlog++;
+    calcular_tempo(A.quando, sizeof(A.quando));
 
-        printf("Transação ocorrida em: %s\n", A.quando);
-        sleep(2);
-        return OK;
+    conta1.log[conta1.nlog] = A;
+    conta1.saldo_corrente = A.saldo_corrente_apos;
+    conta1.nlog++;
+
+    printf("Depósito de R$%.02f realizado com sucesso às %s\n", (float) valor / 100, A.quando);
+    sleep(3);
+
+    return OK;
 }
 
 int sacar(long long valor)
 {
-    //inicializar tempo
-    time_t tempo_atual;
-    tempo_atual = time(NULL);
-    struct tm *data_hora;
-    data_hora = localtime(&tempo_atual);
-    
     if (valor > conta1.saldo_corrente)
+    {
+        printf("Saldo insuficiente para o saque! Encerrando a aplicação...\n\n");
+        sleep(2);
+        return ERRO_SALDO_INSUFICIENTE;
+    } 
+
+    Transacao A;
+    A.tipo = SAQ;
+    A.valor = valor;
+    A.saldo_corrente_apos = conta1.saldo_corrente - valor;
+    A.saldo_poupanca_apos = conta1.saldo_poupanca; // para evitar lixo de memoria
+
+    calcular_tempo(A.quando, sizeof(A.quando));
+
+    conta1.log[conta1.nlog] = A;
+    conta1.saldo_corrente = A.saldo_corrente_apos;
+    conta1.nlog++;
+    printf("Saque de R$%.02f realizado com sucesso às %s\n\n", (float) valor / 100, A.quando);
+    sleep(3);
+
+    return OK;
+}
+
+
+int aplicar_poupanca(long long valor)
+{
+    if (valor > conta1.saldo_corrente)
+    {
+        printf("Saldo insuficiente! Encerrando a aplicação...\n\n");
+        sleep(2);
+        return ERRO_SALDO_INSUFICIENTE;
+    }
+    if (valor < 0) 
+    {
+        printf("Valor inválido! Encerrando a aplicação...\n\n");
+        sleep(2);
+        return ERRO_VALOR_INVALIDO;
+    }
+
+    Transacao A;
+    A.tipo = APLI;
+    A.valor = valor;
+    A.saldo_corrente_apos = conta1.saldo_corrente - valor;
+    A.saldo_poupanca_apos = conta1.saldo_poupanca + valor;
+
+    calcular_tempo(A.quando, sizeof(A.quando));
+
+    conta1.log[conta1.nlog] = A;
+    conta1.saldo_corrente = A.saldo_corrente_apos;
+    conta1.saldo_poupanca = A.saldo_poupanca_apos;
+    conta1.nlog++;
+    printf("Aplicação de R$%.02f realizada com sucesso às %s\n\n", (float) valor / 100, A.quando);
+    sleep(3);
+
+    return OK;
+}
+
+int resgatar_poupanca(long long valor)
+{
+    printf("SALDO: %lld\n\n", valor);
+    if (valor > conta1.saldo_poupanca)
+    {
+        printf("Saldo insuficiente! Encerrando a aplicação...\n\n");
+        sleep(2);
+        return ERRO_SALDO_INSUFICIENTE;
+    }
+    if (valor < 0) 
+    {
+        printf("Valor inválido! Encerrando a aplicação...\n\n");
+        sleep(2);
+        return ERRO_VALOR_INVALIDO;
+    }
+
+    Transacao A;
+    A.tipo = RESG;
+    A.valor = valor;
+    A.saldo_corrente_apos = conta1.saldo_corrente + valor;
+    A.saldo_poupanca_apos = conta1.saldo_poupanca - valor;
+
+    calcular_tempo(A.quando, sizeof(A.quando));
+
+    conta1.log[conta1.nlog] = A;
+    conta1.saldo_corrente = A.saldo_corrente_apos;
+    conta1.saldo_poupanca = A.saldo_poupanca_apos;
+    conta1.nlog++;
+    printf("Resgate de R$%.02f realizada com sucesso às %s\n\n", (float) valor / 100, A.quando);
+    sleep(3);
+
+    return OK;
+}
+
+
+long long saldo_corrente(void)
+{
+    return conta1.saldo_corrente;
+}
+
+long long saldo_poupanca(void)
+{
+    return conta1.saldo_poupanca;
+}
+
+void extrato_imprimir(void)
+{
+    for (int i = conta1.nlog - 1; i > - 1; i--)
+    {
+        printf("Extrato Transação %i:\n\n", i + 1);
+
+        printf("Extrato do valor da transação: R$%.02f\n", (float) conta1.log[i].valor / 100);
+        printf("Extrato do saldo após a transação: R$%.02f\n", (float) conta1.log[i].saldo_corrente_apos / 100);
+        printf("Extrato da poupança após a transação: R$%.02f\n", (float) conta1.log[i].saldo_poupanca_apos / 100);
+        if (conta1.log[i].tipo == PIX)
         {
-            printf("Saldo insuficiente para o saque! Encerrando a aplicação...\n");
-            sleep(2); //para brevemente o programa para poder ler o terminal
-            return ERRO_SALDO_INSUFICIENTE;
+            printf("Destino da transação: %s\n", conta1.log[i].destino);
         }
-            Transacao A;
-            A.tipo = SAQ;
-            A.valor = valor;
-            A.saldo_corrente_apos = conta1.saldo_corrente - valor;
-            A.quando[20];
+        printf("Horário da transação: %s\n\n", conta1.log[i].quando);
+        sleep(2);
+    }
+}
 
-            //snprintf transforma o horário para string e joga pro array
-            snprintf(A.quando, sizeof(A.quando), "%d-%02d-%02d %02d:%02d:%02d", 
-            data_hora->tm_year + 1900, 
-            data_hora->tm_mon + 1, 
-            data_hora->tm_mday, 
-            data_hora->tm_hour, 
-            data_hora->tm_min, 
-            data_hora->tm_sec);
+void calcular_tempo(char *quando, int tamanho)
+{
+    time_t tempo_atual = time(NULL);
+    struct tm *data_hora = localtime(&tempo_atual);
 
-            conta1.log[conta1.nlog] = A;
-            conta1.saldo_corrente = A.saldo_corrente_apos;
-            conta1.nlog++;
-            printf("Transação ocorrida em: %s\n", A.quando);
-            sleep(2);
-
-            return OK;
+    snprintf(quando, tamanho, "%d-%02d-%02d %02d:%02d:%02d",
+        data_hora->tm_year + 1900,
+        data_hora->tm_mon + 1,
+        data_hora->tm_mday,
+        data_hora->tm_hour,
+        data_hora->tm_min,
+        data_hora->tm_sec
+    );
 }
