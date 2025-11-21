@@ -146,6 +146,17 @@ void extrato_imprimir(void)
     {
         printf("Extrato Transação %i:\n\n", i + 1);
 
+        switch (conta1.log[i].tipo)
+        {
+            case DEP:  printf("Tipo da transação: %s\n", "Depósito"); break;
+            case SAQ:  printf("Tipo da transação: %s\n", "Saque"); break;
+            case APLI: printf("Tipo da transação: %s\n", "Aplicação"); break;
+            case RESG: printf("Tipo da transação: %s\n", "Resgate"); break;
+            case PIX:  printf("Tipo da transação: %s\n", "PIX Realizado"); break;
+            case REND: printf("Tipo da transação: %s\n", "Rendimento"); break;
+            case PIXR: printf("Tipo da transação: %s\n", "PIX Recebido"); break;
+            default:   printf("Tipo da transação: %s\n", "Desconhecido"); break;
+        }
         printf("Extrato do valor da transação: R$%.02f\n", (float) conta1.log[i].valor / 100);
         printf("Extrato do saldo após a transação: R$%.02f\n", (float) conta1.log[i].saldo_corrente_apos / 100);
         printf("Extrato da poupança após a transação: R$%.02f\n", (float) conta1.log[i].saldo_poupanca_apos / 100);
