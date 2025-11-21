@@ -8,6 +8,7 @@
     #include <unistd.h>
 #endif
 
+#include <stdio.h>
 #include <time.h>
 
 #define MAX_TRANS 100
@@ -55,5 +56,6 @@ long long saldo_poupanca(void); // retorna o valor da poupança
 void extrato_imprimir(void); // imprime as transações realizadas e o saldo final.
 
 void calcular_tempo(char *quando, int tamanho);
+
 
 #endif // CONTA_H
