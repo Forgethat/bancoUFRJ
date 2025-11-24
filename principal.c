@@ -13,12 +13,12 @@ int main()
 
         printf("1. Depositar (conta corrente)\n");
         printf("2. Sacar (sem cheque especial)\n");
-        printf("3. Aplicar na poupança\n");
+        printf("3. Aplicar na poupança\n"); //deletar
         printf("4. Resgatar da poupança\n");
-        printf("5. Fazer PIX (registrar conta/chave de destino)\n");
-        printf("6. Consultar saldos\n");
-        printf("7. Extrato (listar transações com data/hora)\n");
-        printf("8. Sair\n\n");
+        //printf("5. Fazer PIX (registrar conta/chave de destino)\n"); //deletar
+        printf("5. Consultar saldos\n");
+        printf("6. Extrato (listar transações com data/hora)\n");
+        printf("7. Sair\n\n");
 
         scanf(" %i", &resposta);
 
@@ -54,10 +54,6 @@ int main()
                 printf("Digite o valor que deseja resgatar da poupança em centavos: ");
                 scanf("%lld", &valor_RESG);
                 resgatar_poupanca(valor_RESG);
-                break;
-
-            case PIX:
-                conta1.nlog++;
                 break;
 
             case CSAL:
