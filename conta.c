@@ -142,6 +142,11 @@ long long saldo_poupanca(void)
 
 void extrato_imprimir(void)
 {
+    if (conta1.nlog == 0) {
+        printf("Nenhuma operação realizada.\n");
+        sleep(2);
+        return;
+    }
     for (int i = conta1.nlog - 1; i > - 1; i--)
     {
         printf("Extrato Transação %i:\n\n", i + 1);
