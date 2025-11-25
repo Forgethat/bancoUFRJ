@@ -52,7 +52,7 @@ long long saldo_poupanca(void); // retorna o valor da poupança
 
 void extrato_imprimir(void); // imprime as transações realizadas e o saldo final.
 
-void calcular_tempo(char *quando, int tamanho);
+void calcular_tempo(char *quando, int tamanho); // calcula a hora exata que uma transação foi realizada
 
 
 #endif // CONTA_H

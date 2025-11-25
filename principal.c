@@ -1,14 +1,8 @@
 #include "conta.h"
 
-void limparBuffer(void) {
-    char c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
 int main()
 {
     conta_init(); // inicializar conta
-
     int resposta = 0;
 
     while (conta1.nlog < 100) // limitar a 100 transações
@@ -23,7 +17,11 @@ int main()
         printf("6. Extrato (listar transações com data/hora)\n");
         printf("7. Sair\n\n");
 
-        scanf(" %i", &resposta);
+        if (scanf(" %i", &resposta) == 0) // checando se usuário digitou um número de fato
+        {
+            char buffer[100];
+            scanf("%s", buffer); // limpando o stdin
+        }
 
         switch (resposta)
         {
@@ -31,9 +29,11 @@ int main()
                 long long valor_DEP = 0;
                 printf("O valor do seu saldo atual é: R$%.02f\n", conta1.saldo_corrente / 100.0);
                 printf("Digite o valor que deseja depositar em centavos: ");
-                scanf("%lld", &valor_DEP);
-                //setbuf(stdin, 0);
-                limparBuffer();
+                if (scanf("%lld", &valor_DEP) == 0)
+                {
+                    char buffer[100];
+                    scanf("%s", buffer); 
+                }
                 depositar(valor_DEP);
                 break;
 
@@ -41,9 +41,11 @@ int main()
                 long long saque = 0;
                 printf("O valor do seu saldo atual é: R$%.02f.\n", conta1.saldo_corrente / 100.0);
                 printf("Digite o valor que deseja sacar em centavos: ");
-                scanf("%lld", &saque);
-                //setbuf(stdin, 0);
-                limparBuffer();
+                if (scanf("%lld", &saque) == 0)
+                {
+                    char buffer[100];
+                    scanf("%s", buffer); 
+                }
                 sacar(saque);
                 break;
 
@@ -51,7 +53,11 @@ int main()
                 long long valor_APLI = 0;
                 printf("O valor do seu saldo atual é: R$%.02f\n", conta1.saldo_corrente / 100.0);
                 printf("Digite o valor que deseja aplicar na poupança em centavos: ");
-                scanf("%lld", &valor_APLI);
+                if (scanf("%lld", &valor_APLI) == 0)
+                {
+                    char buffer[100];
+                    scanf("%s", buffer);
+                }
                 aplicar_poupanca(valor_APLI);
                 break;
 
@@ -59,7 +65,11 @@ int main()
                 long long valor_RESG = 0;
                 printf("O valor do seu saldo da poupança atual é: R$%.02f\n", conta1.saldo_poupanca / 100.0);
                 printf("Digite o valor que deseja resgatar da poupança em centavos: ");
-                scanf("%lld", &valor_RESG);
+                if (scanf("%lld", &valor_RESG) == 0)
+                {
+                    char buffer[100];
+                    scanf("%s", buffer);
+                }
                 resgatar_poupanca(valor_RESG);
                 break;
 
@@ -81,7 +91,6 @@ int main()
                 printf("Opção inválida.\n\n");
                 sleep(2);
                 break;
-
         }
     }
     printf("Limite de transações alcançado! Encerrando a aplicação por medidas de segurança.\n");

@@ -9,9 +9,11 @@ void conta_init(void)
     conta1.nlog = 0;
 }
 
+
 int depositar(long long valor)
 {
-    if (valor <= 0) {
+    if (valor <= 0) 
+    {
         printf("Valor inválido! Operação cancelada...\n\n");
         sleep(2);
         return ERRO_VALOR_INVALIDO;
@@ -53,7 +55,7 @@ int sacar(long long valor)
     A.tipo = SAQ;
     A.valor = valor;
     A.saldo_corrente_apos = conta1.saldo_corrente - valor;
-    A.saldo_poupanca_apos = conta1.saldo_poupanca; // para evitar lixo de memoria
+    A.saldo_poupanca_apos = conta1.saldo_poupanca;
 
     calcular_tempo(A.quando, sizeof(A.quando));
 
@@ -144,6 +146,7 @@ long long saldo_poupanca(void)
     return conta1.saldo_poupanca;
 }
 
+
 void extrato_imprimir(void)
 {
     if (conta1.nlog == 0) {
@@ -170,8 +173,10 @@ void extrato_imprimir(void)
         printf("Horário da transação: %s\n\n", conta1.log[i].quando);
         sleep(1);
     }
+    printf("\n");
     sleep(1);
 }
+
 
 void calcular_tempo(char *quando, int tamanho)
 {
