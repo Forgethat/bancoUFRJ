@@ -1,5 +1,10 @@
 #include "conta.h"
 
+void limparBuffer(void) {
+    char c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 int main()
 {
     conta_init(); // inicializar conta
@@ -27,6 +32,8 @@ int main()
                 printf("O valor do seu saldo atual é: R$%.02f\n", conta1.saldo_corrente / 100.0);
                 printf("Digite o valor que deseja depositar em centavos: ");
                 scanf("%lld", &valor_DEP);
+                //setbuf(stdin, 0);
+                limparBuffer();
                 depositar(valor_DEP);
                 break;
 
@@ -35,6 +42,8 @@ int main()
                 printf("O valor do seu saldo atual é: R$%.02f.\n", conta1.saldo_corrente / 100.0);
                 printf("Digite o valor que deseja sacar em centavos: ");
                 scanf("%lld", &saque);
+                //setbuf(stdin, 0);
+                limparBuffer();
                 sacar(saque);
                 break;
 
