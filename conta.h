@@ -54,5 +54,5 @@ void extrato_imprimir(void); // imprime as transações realizadas e o saldo fin
 
 void calcular_tempo(char *quando, int tamanho);
 
-
+void limparBuffer(void);
 #endif // CONTA_H

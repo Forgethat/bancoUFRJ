@@ -11,9 +11,9 @@ void conta_init(void)
 
 int depositar(long long valor)
 {
-    if (valor < 0) {
-        printf("Valor inválido! Encerrando a aplicação...\n\n");
-        sleep(3);
+    if (valor <= 0) {
+        printf("Valor inválido! Operação cancelada...\n\n");
+        sleep(2);
         return ERRO_VALOR_INVALIDO;
     }
 
@@ -29,7 +29,7 @@ int depositar(long long valor)
     conta1.saldo_corrente = A.saldo_corrente_apos;
     conta1.nlog++;
 
-    printf("Depósito de R$%.02f realizado com sucesso às %s\n", (float) valor / 100, A.quando);
+    printf("Depósito de R$%.02f realizado com sucesso às %s\n", valor / 100.0, A.quando);
     sleep(3);
 
     return OK;
@@ -39,10 +39,15 @@ int sacar(long long valor)
 {
     if (valor > conta1.saldo_corrente)
     {
-        printf("Saldo insuficiente para o saque! Encerrando a aplicação...\n\n");
+        printf("Saldo insuficiente para o saque! Operação cancelada...\n\n");
         sleep(2);
         return ERRO_SALDO_INSUFICIENTE;
     } 
+    if (valor <= 0) {
+        printf("Valor inválido! Operação cancelada...\n\n");
+        sleep(2);
+        return ERRO_VALOR_INVALIDO;
+    }
 
     Transacao A;
     A.tipo = SAQ;
@@ -55,7 +60,7 @@ int sacar(long long valor)
     conta1.log[conta1.nlog] = A;
     conta1.saldo_corrente = A.saldo_corrente_apos;
     conta1.nlog++;
-    printf("Saque de R$%.02f realizado com sucesso às %s\n\n", (float) valor / 100, A.quando);
+    printf("Saque de R$%.02f realizado com sucesso às %s\n\n", valor / 100.0, A.quando);
     sleep(3);
 
     return OK;
@@ -66,13 +71,13 @@ int aplicar_poupanca(long long valor)
 {
     if (valor > conta1.saldo_corrente)
     {
-        printf("Saldo insuficiente! Encerrando a aplicação...\n\n");
+        printf("Saldo insuficiente! Operação cancelada...\n\n");
         sleep(2);
         return ERRO_SALDO_INSUFICIENTE;
     }
-    if (valor < 0) 
+    if (valor <= 0) 
     {
-        printf("Valor inválido! Encerrando a aplicação...\n\n");
+        printf("Valor inválido! Operação cancelada...\n\n");
         sleep(2);
         return ERRO_VALOR_INVALIDO;
     }
@@ -89,7 +94,7 @@ int aplicar_poupanca(long long valor)
     conta1.saldo_corrente = A.saldo_corrente_apos;
     conta1.saldo_poupanca = A.saldo_poupanca_apos;
     conta1.nlog++;
-    printf("Aplicação de R$%.02f realizada com sucesso às %s\n\n", (float) valor / 100, A.quando);
+    printf("Aplicação de R$%.02f realizada com sucesso às %s\n\n", valor / 100.0, A.quando);
     sleep(3);
 
     return OK;
@@ -97,16 +102,15 @@ int aplicar_poupanca(long long valor)
 
 int resgatar_poupanca(long long valor)
 {
-    printf("SALDO: %lld\n\n", valor);
     if (valor > conta1.saldo_poupanca)
     {
-        printf("Saldo insuficiente! Encerrando a aplicação...\n\n");
+        printf("Saldo insuficiente! Operação cancelada...\n\n");
         sleep(2);
         return ERRO_SALDO_INSUFICIENTE;
     }
-    if (valor < 0) 
+    if (valor <= 0) 
     {
-        printf("Valor inválido! Encerrando a aplicação...\n\n");
+        printf("Valor inválido! Operação cancelada...\n\n");
         sleep(2);
         return ERRO_VALOR_INVALIDO;
     }
@@ -123,7 +127,7 @@ int resgatar_poupanca(long long valor)
     conta1.saldo_corrente = A.saldo_corrente_apos;
     conta1.saldo_poupanca = A.saldo_poupanca_apos;
     conta1.nlog++;
-    printf("Resgate de R$%.02f realizada com sucesso às %s\n\n", (float) valor / 100, A.quando);
+    printf("Resgate de R$%.02f realizado com sucesso às %s\n\n", valor / 100.0, A.quando);
     sleep(3);
 
     return OK;
@@ -159,13 +163,14 @@ void extrato_imprimir(void)
             case RESG: printf("Tipo da transação: %s\n", "Resgate"); break;
             default:   printf("Tipo da transação: %s\n", "Desconhecido"); break;
         }
-        printf("Extrato do valor da transação: R$%.02f\n", (float) conta1.log[i].valor / 100);
-        printf("Extrato do saldo após a transação: R$%.02f\n", (float) conta1.log[i].saldo_corrente_apos / 100);
-        printf("Extrato da poupança após a transação: R$%.02f\n", (float) conta1.log[i].saldo_poupanca_apos / 100);
+        printf("Extrato do valor da transação: R$%.02f\n", conta1.log[i].valor / 100.0);
+        printf("Extrato do saldo após a transação: R$%.02f\n", conta1.log[i].saldo_corrente_apos / 100.0);
+        printf("Extrato da poupança após a transação: R$%.02f\n", conta1.log[i].saldo_poupanca_apos / 100.0);
 
         printf("Horário da transação: %s\n\n", conta1.log[i].quando);
-        sleep(2);
+        sleep(1);
     }
+    sleep(1);
 }
 
 void calcular_tempo(char *quando, int tamanho)
@@ -181,4 +186,9 @@ void calcular_tempo(char *quando, int tamanho)
         data_hora->tm_min,
         data_hora->tm_sec
     );
+}
+
+void limparBuffer(void) {
+    char c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
